@@ -1,16 +1,32 @@
 ---
 title: "Agentic AI Protocols: A Technical Survey"
 subtitle: "Architecture, Capabilities, Frameworks, and Adoption"
-author: "Technical Reference — February 2026"
-date: "2026-02-23"
+author: "David Gwartney (david.gwartney@gmail.com)"
+date: "February 2026"
+rights: "© 2026 David Gwartney. Licensed under CC BY 4.0"
 toc: true
-toc-depth: 3
-numbersections: true
+toc-depth: 2
+numbersections: false
 geometry: "margin=1in"
 fontsize: 11pt
 colorlinks: true
 linkcolor: blue
 urlcolor: blue
+header-includes: |
+  \usepackage{fancyhdr}
+  \pagestyle{fancy}
+  \fancyhf{}
+  \fancyfoot[L]{\leftmark}
+  \fancyfoot[R]{\thepage}
+  \renewcommand{\headrulewidth}{0pt}
+  \renewcommand{\footrulewidth}{0.4pt}
+  \usepackage{needspace}
+  \usepackage{etoolbox}
+  \preto{\section}{\needspace{5\baselineskip}}
+  \preto{\subsection}{\needspace{4\baselineskip}}
+  \preto{\subsubsection}{\needspace{3\baselineskip}}
+include-before: |
+  \newpage
 ---
 \newpage
 # Introduction
@@ -94,7 +110,7 @@ define the interface through which these capabilities are exposed and invoked.
 | **Governance** | Linux Foundation (Anthropic retaining specification stewardship)^3^ |
 | **Current Status** | Production standard; de facto cross-vendor tool protocol |
 
-**Technical Overview**
+### Technical Overview
 
 MCP defines a client-server interface through which AI applications (hosts) expose tools,
 resources (file-like data), and prompts to LLM-backed agents. Its design goal is to be the
@@ -108,7 +124,7 @@ The protocol deliberately separates the *host* (the application embedding the LL
 This separation allows server developers to focus on tool implementation without knowledge of
 which models or orchestration frameworks will consume them.
 
-**Architecture & Capabilities**
+### Architecture & Capabilities
 
 MCP is built on JSON-RPC 2.0. The protocol defines three primitives:
 
@@ -148,7 +164,7 @@ flowchart LR
     style C fill:#d4edda,stroke:#333
 ```
 
-**Wire Format & Transport**
+### Wire Format & Transport
 
 | Aspect | Detail |
 |---|---|
@@ -163,7 +179,7 @@ the server process and communicates via stdin/stdout. This model provides strong
 minimal network overhead. Remote servers use HTTP POST for client-to-server messages and SSE
 for server-to-client streaming, supporting both request-response and long-polling patterns.
 
-**Known Implementing Frameworks**
+### Known Implementing Frameworks
 
 | Framework | Notes |
 |---|---|
@@ -181,7 +197,7 @@ Over 10,000 community-built MCP servers are publicly available as of early 2026,
 databases (PostgreSQL, SQLite, MongoDB), APIs (GitHub, Slack, Google Drive), developer tools
 (file system, shell execution, browser automation), and domain-specific integrations.
 
-**Popularity & Standardization**
+### Popularity & Standardization
 
 MCP is the most widely adopted agentic protocol by a significant margin. Key adoption indicators:
 
@@ -206,7 +222,7 @@ The primary criticism is the requirement for a wrapper server process, which UTC
 | **Governance** | LangChain (no independent governance body) |
 | **Current Status** | Mature within LangChain ecosystem; not a cross-vendor standard |
 
-**Technical Overview**
+### Technical Overview
 
 TAP is LangChain's internal standard for describing tool metadata: the name, description,
 input schema, and invocation interface of a callable tool. It is not a wire protocol in the
@@ -218,7 +234,7 @@ TAP's design reflects LangChain's architecture: tools are Python objects with st
 `name`, `description`, and `args_schema` attributes, invoked synchronously or asynchronously
 via a defined `run` / `arun` interface.
 
-**Architecture & Capabilities**
+### Architecture & Capabilities
 
 A TAP tool descriptor contains:
 
@@ -233,7 +249,7 @@ valid arguments. TAP supports synchronous and async invocation, tool-level error
 and return type coercion. There is no session or connection negotiation step — tool invocation
 is a direct Python function call within the agent process.
 
-**Wire Format & Transport**
+### Wire Format & Transport
 
 | Aspect | Detail |
 |---|---|
@@ -247,7 +263,7 @@ underlying tool implementation uses. A TAP tool wrapping the OpenAI API uses HTT
 a tool wrapping a local database uses a database driver. The abstraction is purely at
 the metadata and invocation interface level.
 
-**Known Implementing Frameworks**
+### Known Implementing Frameworks
 
 TAP is LangChain-native. It is used by:
 
@@ -256,7 +272,7 @@ TAP is LangChain-native. It is used by:
 - LangServe: tools deployed as REST endpoints
 - Third-party LangChain integrations (hundreds of community tool packages)
 
-**Popularity & Standardization**
+### Popularity & Standardization
 
 TAP benefits from LangChain's status as the most widely used LLM application framework
 (~100M downloads on PyPI). However, it is not independently standardized and does not
@@ -275,7 +291,7 @@ TAP is best understood as a design pattern rather than an interoperability stand
 | **Governance** | OpenAI (proprietary vendor API) |
 | **Current Status** | Mature; vendor-specific; widely adopted within OpenAI ecosystem |
 
-**Technical Overview**
+### Technical Overview
 
 FCP is the name given to OpenAI's function calling interface — the mechanism by which GPT
 models can request that the calling application execute a function and return the result.
@@ -287,7 +303,7 @@ The protocol enables a model to emit a structured `tool_calls` response rather t
 language, specifying the function name and JSON-encoded arguments. The application executes
 the function and returns the result as a `tool` role message in the conversation.
 
-**Architecture & Capabilities**
+### Architecture & Capabilities
 
 FCP operates within the OpenAI Chat Completions API:
 
@@ -307,7 +323,7 @@ Key capabilities:
   constrained decoding / grammar-based sampling)
 - **`tool_choice`** — Caller can force or prevent specific tool calls
 
-**Wire Format & Transport**
+### Wire Format & Transport
 
 | Aspect | Detail |
 |---|---|
@@ -316,7 +332,7 @@ Key capabilities:
 | **Authentication** | Bearer token (API key or OAuth) |
 | **Schema validation** | JSON Schema (Draft 7); Structured Outputs adds strict validation |
 
-**Known Implementing Frameworks**
+### Known Implementing Frameworks
 
 | Framework | Notes |
 |---|---|
@@ -327,7 +343,7 @@ Key capabilities:
 | **Marvin** | AI function library using FCP |
 | **Compatible providers** | Anthropic (tool_use), Google (function_declarations), Mistral, Cohere, Ollama |
 
-**Popularity & Standardization**
+### Popularity & Standardization
 
 FCP is massively adopted by virtue of OpenAI's model dominance. However, it is
 proprietary to the OpenAI API and not governed by any standards body. As MCP gains
@@ -347,7 +363,7 @@ tool server can be exposed to a model via FCP-style function calls.
 | **Governance** | Community/open (no formal governance body as of early 2026) |
 | **Current Status** | Emerging; early adopter stage |
 
-**Technical Overview**
+### Technical Overview
 
 UTCP is a lightweight alternative to MCP that addresses a specific complaint about MCP's
 architecture: MCP requires a dedicated *wrapper server* to be deployed and maintained for
@@ -360,7 +376,7 @@ The motivation is operational simplicity: existing REST APIs, CLI tools, gRPC se
 WebSocket services should be accessible to agents without requiring that someone deploy and
 maintain an MCP server wrapper for each one.
 
-**Architecture & Capabilities**
+### Architecture & Capabilities
 
 UTCP defines a **Tool Manual** — a JSON document describing:
 
@@ -407,7 +423,7 @@ UTCP supports OpenAPI 2.0 and 3.0 auto-ingestion: given an OpenAPI spec, a UTCP-
 tool can generate the Tool Manual automatically, enabling instant agent access to any
 OpenAPI-documented API.
 
-**Wire Format & Transport**
+### Wire Format & Transport
 
 | Aspect | Detail |
 |---|---|
@@ -416,12 +432,12 @@ OpenAPI-documented API.
 | **Authentication** | Per-transport: Bearer, API key, Basic, OAuth (defined in manual) |
 | **Schema** | JSON Schema; OpenAPI 2.0/3.0 compatible |
 
-**Known Implementing Frameworks**
+### Known Implementing Frameworks
 
 - **Python SDK** — Official UTCP Python SDK (early release; pip-installable)
 - No major framework integrations confirmed as of early 2026; ecosystem building stage
 
-**Popularity & Standardization**
+### Popularity & Standardization
 
 UTCP is in the early adopter phase. Its primary appeal is to developers frustrated by the
 operational overhead of the MCP server model. The ability to auto-ingest OpenAPI specs is a
@@ -448,7 +464,7 @@ and have different capability profiles.
 | **Governance** | Linux Foundation |
 | **Current Status** | Production; major framework support; absorbed ACP (December 2025) |
 
-**Technical Overview**
+### Technical Overview
 
 A2A defines a standard interface for agent-to-agent task delegation: how one agent (a client
 agent) discovers the capabilities of another agent (a remote agent), sends it a task, monitors
@@ -459,7 +475,7 @@ Google's motivation for A2A was the same M×N problem as MCP but at the agent la
 organizations deploy multiple specialized agents, they need a standard way to route tasks to
 the right agent without custom integration code for every agent-to-agent connection.
 
-**Architecture & Capabilities**
+### Architecture & Capabilities
 
 The core abstractions in A2A are:
 
@@ -500,7 +516,7 @@ sequenceDiagram
     R-->>C: status / artifacts {working → completed}
 ```
 
-**Wire Format & Transport**
+### Wire Format & Transport
 
 | Aspect | Detail |
 |---|---|
@@ -510,7 +526,7 @@ sequenceDiagram
 | **Agent discovery** | Well-known URL convention (`/.well-known/agent.json`) |
 | **Task payload** | JSON (text, file references, structured data) |
 
-**Known Implementing Frameworks**
+### Known Implementing Frameworks
 
 | Framework | Notes |
 |---|---|
@@ -521,7 +537,7 @@ sequenceDiagram
 | **Semantic Kernel** | A2A plugin for Microsoft agent workflows |
 | **BeeAI (IBM)** | Post-merger; ACP-compatible A2A interface |
 
-**Popularity & Standardization**
+### Popularity & Standardization
 
 A2A launched with backing from over 100 organizations and has become the dominant
 agent-to-agent coordination protocol. The Linux Foundation donation provides institutional
@@ -540,7 +556,7 @@ specification.
 | **Governance** | Linux Foundation (merged into A2A governance, December 2025)^12^ |
 | **Current Status** | Merged into A2A; preserved as RESTful profile |
 
-**Technical Overview**
+### Technical Overview
 
 ACP was IBM's BeeAI project's answer to the agent coordination problem, developed concurrently
 with A2A. Its design philosophy differed from A2A in one key dimension: ACP was REST-first,
@@ -557,7 +573,7 @@ A2A's richer enterprise features (Agent Cards, capability negotiation, long-runn
 lifecycle). The ACP specification site (`agentcommunicationprotocol.dev`) continues to serve
 documentation for the merged standard.
 
-**Architecture & Capabilities**
+### Architecture & Capabilities
 
 ACP's core design (preserved in the merged A2A/ACP profile):
 
@@ -567,7 +583,7 @@ ACP's core design (preserved in the merged A2A/ACP profile):
 - **Agent metadata embedding** — Agents describe their capabilities in response headers/bodies
   rather than a separate discovery document
 
-**Wire Format & Transport**
+### Wire Format & Transport
 
 | Aspect | Detail |
 |---|---|
@@ -576,12 +592,12 @@ ACP's core design (preserved in the merged A2A/ACP profile):
 | **Authentication** | Standard HTTP authentication (Bearer, API key) |
 | **Discovery** | Embedded metadata in agent responses; no separate well-known URL |
 
-**Known Implementing Frameworks**
+### Known Implementing Frameworks
 
 - **BeeAI Framework** (IBM) — Reference implementation; Python-based agent framework
 - Post-merger implementations target the A2A specification with ACP compatibility
 
-**Popularity & Standardization**
+### Popularity & Standardization
 
 ACP's independent life was brief (May–December 2025). Its architectural ideas (RESTful
 simplicity, async-first design) influenced the merged A2A specification. For new implementations,
@@ -598,7 +614,7 @@ the A2A specification under Linux Foundation governance is the appropriate targe
 | **Governance** | LangChain |
 | **Current Status** | Platform in production; not an independent wire protocol standard |
 
-**Technical Overview**
+### Technical Overview
 
 The Open Agent Platform (OAP) is LangChain's no-code/low-code platform for building,
 deploying, and connecting AI agents. It defines a standardized REST API for inter-agent
@@ -610,7 +626,7 @@ OAP is distinguished from A2A or ACP in an important way: it is a *platform with
 not a standalone wire protocol. Its inter-agent API is specific to the LangChain/LangGraph
 runtime and does not define a cross-vendor standard.
 
-**Architecture & Capabilities**
+### Architecture & Capabilities
 
 OAP provides:
 
@@ -622,7 +638,7 @@ OAP provides:
 The inter-agent API follows REST conventions: agents are registered services with unique
 endpoints; one agent calls another via HTTP POST with a JSON body describing the task.
 
-**Wire Format & Transport**
+### Wire Format & Transport
 
 | Aspect | Detail |
 |---|---|
@@ -631,11 +647,11 @@ endpoints; one agent calls another via HTTP POST with a JSON body describing the
 | **Authentication** | API keys (platform-managed) |
 | **Discovery** | Platform-internal registry |
 
-**Known Implementing Frameworks**
+### Known Implementing Frameworks
 
 OAP is the platform; the relevant framework is LangGraph Platform (the underlying runtime).
 
-**Popularity & Standardization**
+### Popularity & Standardization
 
 OAP benefits from LangChain's large developer community. Its no-code interface makes it
 accessible to non-engineer users ("citizen developers"). As a cross-vendor wire protocol
@@ -673,7 +689,7 @@ The protocol is built around W3C Decentralized Identifiers (DIDs) for agent iden
 removing the dependency on centralized identity providers and enabling trust without
 pre-established relationships.
 
-**Architecture & Capabilities**
+### Architecture & Capabilities
 
 ANP uses a three-layer architecture:
 
@@ -699,7 +715,7 @@ flowchart TD
 - **Application layer** — JSON-LD semantic descriptions of agent capabilities, enabling agents
   to understand each other's skills using shared vocabulary (ontologies).
 
-**Wire Format & Transport**
+### Wire Format & Transport
 
 | Aspect | Detail |
 |---|---|
@@ -709,13 +725,13 @@ flowchart TD
 | **Encryption** | End-to-end (DID-linked key pairs) |
 | **Topology** | Peer-to-peer |
 
-**Known Implementing Frameworks**
+### Known Implementing Frameworks
 
 ANP is early-stage open source. No major framework has announced native ANP support as of
 early 2026. Reference implementations exist in the open-source repositories associated with
 the protocol's development.
 
-**Popularity & Standardization**
+### Popularity & Standardization
 
 ANP addresses real problems — decentralized identity for agents and cross-organization agent
 communication — but has not yet achieved significant production adoption. Its DID-based
@@ -735,7 +751,7 @@ complexity that may slow initial adoption.
 | **Governance** | Cisco / AGNTCY consortium^16^ |
 | **Current Status** | Early production; enterprise-focused |
 
-**Technical Overview**
+### Technical Overview
 
 AGP is Cisco's contribution to the agentic protocol landscape, designed for enterprise
 environments where security, routing, and auditability are paramount. It draws on Cisco's
@@ -747,7 +763,7 @@ AGP is designed for organizations running large numbers of agents across differe
 cloud environments, and security zones, where centralized policy enforcement and traffic
 inspection are requirements.
 
-**Architecture & Capabilities**
+### Architecture & Capabilities
 
 AGP is built on gRPC and uses Protocol Buffers for message encoding. Key features:
 
@@ -784,7 +800,7 @@ flowchart LR
     style DomB fill:#d4edda,stroke:#333
 ```
 
-**Wire Format & Transport**
+### Wire Format & Transport
 
 | Aspect | Detail |
 |---|---|
@@ -794,7 +810,7 @@ flowchart LR
 | **Authorization** | RBAC policies enforced at gateway |
 | **Topology** | Hierarchical (gateway-mediated routing) |
 
-**Known Implementing Frameworks**
+### Known Implementing Frameworks
 
 | Framework | Notes |
 |---|---|
@@ -803,7 +819,7 @@ flowchart LR
 | **AutoGen** | AGP transport adapter |
 | **Claude Desktop** | Reported integration (limited details public) |
 
-**Popularity & Standardization**
+### Popularity & Standardization
 
 AGP fills a specific niche: enterprise agent deployments where network-level security, audit
 trails, and policy enforcement are required. The gRPC/Protobuf stack is familiar to enterprise
@@ -823,7 +839,7 @@ startup or research contexts.
 | **Governance** | Eclipse Foundation |
 | **Current Status** | Production (Deutsche Telekom: millions of interactions) |
 
-**Technical Overview**
+### Technical Overview
 
 LMOS (Language Model Operating System) is an Eclipse Foundation project that defines an
 agent platform and associated protocols for deploying AI agents in production at scale.
@@ -835,7 +851,7 @@ LMOS is protocol-agnostic at the transport layer — it deliberately supports mu
 to accommodate different deployment contexts — and uses W3C Web of Things (WoT) and W3C DID
 standards for capability description and identity.
 
-**Architecture & Capabilities**
+### Architecture & Capabilities
 
 LMOS defines:
 
@@ -869,7 +885,7 @@ flowchart TD
     style K8s fill:#fff3cd,stroke:#666
 ```
 
-**Wire Format & Transport**
+### Wire Format & Transport
 
 | Aspect | Detail |
 |---|---|
@@ -879,7 +895,7 @@ flowchart TD
 | **Identity** | W3C DID |
 | **Deployment** | Kubernetes (operator-managed) |
 
-**Known Implementing Frameworks**
+### Known Implementing Frameworks
 
 | Framework | Notes |
 |---|---|
@@ -887,7 +903,7 @@ flowchart TD
 | **ARC Agent Framework** | Kotlin/JVM agent framework with native LMOS support |
 | **Deutsche Telekom** | Production deployment; primary real-world validation |
 
-**Popularity & Standardization**
+### Popularity & Standardization
 
 LMOS stands out in this survey as one of the few protocols with confirmed large-scale
 production deployment: Deutsche Telekom runs LMOS-based agents handling millions of
@@ -915,7 +931,7 @@ the rich interactive patterns that modern AI-powered applications require.
 | **Governance** | CopilotKit / Community |
 | **Current Status** | Rapidly growing; broad framework adoption |
 
-**Technical Overview**
+### Technical Overview
 
 AG-UI defines a standardized event stream protocol for communication between AI agents and
 frontend user interfaces. The core problem it solves: every agent framework (LangGraph,
@@ -927,38 +943,44 @@ AG-UI defines 16 standardized event types covering the full lifecycle of an agen
 initiation through tool call execution to completion, plus mechanisms for bidirectional state
 synchronization between agent and UI.
 
-**Architecture & Capabilities**
+### Architecture & Capabilities
 
 AG-UI is event-based. The agent emits a stream of typed events; the UI application consumes
 the stream and renders appropriate UI elements for each event type.
 
 The 16 event types are organized into categories:
 
-**Run lifecycle events:**
+#### Run lifecycle events
+
 - `RUN_STARTED` — Agent run initiated
 - `RUN_FINISHED` — Run completed successfully
 - `RUN_ERROR` — Run terminated with error
 
-**Message events:**
+#### Message events
+
 - `TEXT_MESSAGE_START` — Beginning of a text response
 - `TEXT_MESSAGE_CONTENT` — Delta chunk of streaming text
 - `TEXT_MESSAGE_END` — Text response complete
 
-**Tool call events:**
+#### Tool call events
+
 - `TOOL_CALL_START` — Agent is invoking a tool
 - `TOOL_CALL_ARGS` — Streaming tool arguments (for display)
 - `TOOL_CALL_END` — Tool call complete
 - `TOOL_CALL_RESULT` — Result returned from tool
 
-**State synchronization events:**
+#### State synchronization events
+
 - `STATE_SNAPSHOT` — Full agent state (for UI initialization)
 - `STATE_DELTA` — Incremental state update (JSON Patch)
 
-**Human-in-the-loop events:**
+#### Human-in-the-loop events
+
 - `INTERRUPT_REQUESTED` — Agent requests human input before proceeding
 - `INTERRUPT_RESPONSE` — Human provides input
 
-**Custom events:**
+#### Custom events
+
 - `CUSTOM` — Application-defined events for domain-specific UI updates
 
 The state synchronization mechanism is particularly notable: agents can maintain shared state
@@ -967,7 +989,7 @@ or data context in real-time. State deltas use JSON Patch (RFC 6902) format.
 
 ![AG-UI Architecture](ag-ui-architecture.svg){width=100%}
 
-**Wire Format & Transport**
+### Wire Format & Transport
 
 | Aspect | Detail |
 |---|---|
@@ -978,7 +1000,7 @@ or data context in real-time. State deltas use JSON Patch (RFC 6902) format.
 | **Authentication** | Application-defined (not specified by protocol) |
 | **Bidirectional** | Yes (SSE for streaming; POST for human-in-the-loop responses) |
 
-**Known Implementing Frameworks**
+### Known Implementing Frameworks
 
 | Framework | Notes |
 |---|---|
@@ -989,7 +1011,7 @@ or data context in real-time. State deltas use JSON Patch (RFC 6902) format.
 | **Oracle Agent Spec** | AG-UI compatibility layer |
 | **AutoGen** | AG-UI event adapter |
 
-**Popularity & Standardization**
+### Popularity & Standardization
 
 AG-UI has achieved rapid adoption in the frontend/full-stack developer community, where
 the prior state — every framework using its own streaming protocol — was a significant pain
@@ -1023,7 +1045,7 @@ models for agent communication.
 | **Governance** | Apache 2.0 (open source)^23^ |
 | **Current Status** | Production; live integrations with Etsy and others |
 
-**Technical Overview**
+## Technical Overview
 
 The Agentic Commerce Protocol defines how AI agents execute commercial transactions —
 browsing products, adding items to a cart, and completing checkout — on behalf of human users.
@@ -1036,7 +1058,7 @@ to buy) from the *payment execution* layer (which the merchant retains control o
 agent submits a structured purchase intent; the merchant's payment infrastructure (Stripe)
 handles the actual transaction.
 
-**Architecture & Capabilities**
+### Architecture & Capabilities
 
 ACP-Commerce can be deployed two ways:
 
@@ -1052,7 +1074,7 @@ The protocol defines:
 - **Checkout initiation** — Agent submits order intent; merchant completes payment processing
 - **Order status** — Agent can query order state post-purchase
 
-**Wire Format & Transport**
+### Wire Format & Transport
 
 | Aspect | Detail |
 |---|---|
@@ -1061,7 +1083,7 @@ The protocol defines:
 | **Authentication** | OAuth 2.0 for agent authorization; merchant retains payment auth |
 | **License** | Apache 2.0 |
 
-**Known Implementing Frameworks**
+### Known Implementing Frameworks
 
 | Integrator | Notes |
 |---|---|
@@ -1071,7 +1093,7 @@ The protocol defines:
 | **Salesforce Agentforce** | Integration planned |
 | **OpenAI** | Reference client implementation |
 
-**Popularity & Standardization**
+### Popularity & Standardization
 
 ACP-Commerce is the most production-mature domain-specific protocol in this survey.
 Stripe's payment infrastructure position and OpenAI's model ecosystem give it a strong
@@ -1090,7 +1112,7 @@ merchant without additional integration work. Apache 2.0 licensing removes barri
 | **Governance** | Multi-stakeholder (Google-led; 60+ org consortium) |
 | **Current Status** | Early production; strong organizational backing |
 
-**Technical Overview**
+### Technical Overview
 
 AP2 is a payments infrastructure protocol for autonomous agent transactions, designed to
 handle the trust and authorization challenges specific to AI agents making financial
@@ -1104,7 +1126,7 @@ limits, merchant categories, time bounds). The agent presents this mandate when 
 a transaction, enabling payment processors to verify authorization without requiring
 real-time human confirmation.
 
-**Architecture & Capabilities**
+### Architecture & Capabilities
 
 AP2 builds on A2A and MCP as transport substrates:
 
@@ -1133,7 +1155,7 @@ sequenceDiagram
     P-->>A: Payment result
 ```
 
-**Wire Format & Transport**
+### Wire Format & Transport
 
 | Aspect | Detail |
 |---|---|
@@ -1142,7 +1164,7 @@ sequenceDiagram
 | **Crypto payments** | HTTP 402 (A2A×402 extension); Coinbase integration |
 | **Signature scheme** | Cryptographic (standard not finalized publicly as of early 2026) |
 
-**Known Implementing Frameworks**
+### Known Implementing Frameworks
 
 | Organization | Role |
 |---|---|
@@ -1150,7 +1172,7 @@ sequenceDiagram
 | **Coinbase** | Cryptocurrency payment extension (A2A×402) |
 | **60+ partner orgs** | Broad consortium including payment processors and banks |
 
-**Popularity & Standardization**
+### Popularity & Standardization
 
 AP2's 60+ organization backing is a strong signal of institutional momentum. The dependency
 on W3C Verifiable Credentials aligns with emerging decentralized identity standards and
@@ -1169,13 +1191,13 @@ payment contexts. Technical specification details remain partially non-public as
 | **Governance** | Unknown |
 | **Current Status** | **Unconfirmed** — No public specification or repository found |
 
-**Technical Overview**
+### Technical Overview
 
 TDF has been described as a Stanford-developed standard for defining agent tasks in a
 structured, portable format. The concept — a standardized schema for task definitions that
 can be interpreted by different agent frameworks — addresses a real interoperability gap.
 
-**Status Note**
+### Status Note
 
 Research conducted for this survey found no public GitHub repository, specification document,
 arXiv paper, or official Stanford project page for TDF as described. It is possible that:
@@ -1198,7 +1220,7 @@ public documentation. Engineers should not rely on TDF availability for producti
 | **Governance** | Academic / open (no formal governance) |
 | **Current Status** | Research stage; not production deployed |
 
-**Technical Overview**
+### Technical Overview
 
 Agora is a meta-protocol: rather than defining a fixed message format, Agora defines a
 protocol for agents to *negotiate* which communication mode they will use for a given
@@ -1210,7 +1232,7 @@ ambiguous tasks), executable code (for precisely-specifiable computational tasks
 pre-defined routines/templates (for frequent, well-understood interactions). The optimal
 mode depends on both the task and the agent's capabilities.
 
-**Architecture & Capabilities**
+### Architecture & Capabilities
 
 Agora defines three communication modes:
 
@@ -1231,7 +1253,7 @@ The negotiation process:
 Protocol Documents are identified by content hash, enabling agents to recognize and reuse
 previously-negotiated protocols without re-transmitting the full specification.
 
-**Wire Format & Transport**
+### Wire Format & Transport**
 
 | Aspect | Detail |
 |---|---|
@@ -1240,12 +1262,12 @@ previously-negotiated protocols without re-transmitting the full specification.
 | **Protocol Document ID** | Content hash (SHA-256 or similar) |
 | **Communication modes** | Natural language, code, routine (pre-defined templates) |
 
-**Known Implementing Frameworks**
+### Known Implementing Frameworks
 
 None as of early 2026. Agora is a research prototype; the arXiv paper describes experimental
 results but not a production-ready implementation.
 
-**Popularity & Standardization**
+### Popularity & Standardization
 
 Agora is a theoretically interesting contribution to the protocol space that has not yet
 crossed into practical adoption. The meta-protocol approach aligns with real-world needs
@@ -1429,3 +1451,21 @@ official governance repositories for current status.*
 26. Agora Protocol — Official site. <https://agoraprotocol.org/>; GitHub demo: <https://github.com/agora-protocol/paper-demo>
 
 27. Agora Protocol — arXiv preprint (2410.11905). <https://arxiv.org/abs/2410.11905>
+
+\newpage
+# License
+
+This work is licensed under the Creative Commons Attribution 4.0 International License (CC BY 4.0).
+
+You are free to:
+
+- **Share** — copy and redistribute the material in any medium or format
+- **Adapt** — remix, transform, and build upon the material for any purpose, including commercially
+
+Under the following terms:
+
+- **Attribution** — You must give appropriate credit, provide a link to the license, and indicate if changes were made.
+
+Full license text: <https://creativecommons.org/licenses/by/4.0/legalcode>
+
+© 2026 David Gwartney. All rights reserved under the terms of CC BY 4.0.

@@ -5,11 +5,9 @@ PANDOC_OPTS := \
 	--pdf-engine=xelatex \
 	--lua-filter=mermaid-filter.lua \
 	--variable mainfont="DejaVu Sans" \
-	--variable monofont="Courier New" \
+	--variable monofont="DejaVu Sans Mono" \
 	--variable geometry:margin=1in \
-	--syntax-highlighting=tango \
-	--toc \
-	--toc-depth=3
+	--syntax-highlighting=tango
 
 .PHONY: all clean
 

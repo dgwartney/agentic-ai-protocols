@@ -1,5 +1,7 @@
 # Agentic AI Protocols: A Technical Survey
 
+**Author:** David Gwartney (david.gwartney@gmail.com)
+
 A comprehensive technical survey of the emerging protocol landscape for autonomous AI agents, covering tool interaction, agent-to-agent communication, networking and identity infrastructure, agent-user interaction, and specialized domain protocols.
 
 ## Document
@@ -23,7 +25,7 @@ The following tools must be installed to build the PDF:
 - [pandoc](https://pandoc.org/) (tested with v3.x)
 - [XeLaTeX](https://tug.org/xetex/) (typically via TeX Live or MacTeX)
 - [mermaid-cli](https://github.com/mermaid-js/mermaid-cli) (`mmdc`, tested with v11.12.0)
-- DejaVu Sans font (used as the main document font)
+- DejaVu Sans and DejaVu Sans Mono fonts
 
 ### macOS (Homebrew)
 
@@ -59,7 +61,7 @@ make clean
 1. **pandoc** reads `agentic-protocols.md` and applies `mermaid-filter.lua`
 2. The Lua filter detects `` ```mermaid `` code blocks, writes each to a temp file, and invokes `mmdc` to render a PNG image
 3. SVG diagrams (`ag-ui-architecture.svg`, `protocol-stack.svg`) are referenced as standard Markdown images and embedded by pandoc
-4. **XeLaTeX** produces the final PDF with table of contents, numbered sections, and syntax highlighting
+4. **XeLaTeX** produces the final PDF with table of contents and syntax highlighting
 
 ## Project Structure
 
@@ -76,4 +78,6 @@ make clean
 
 ## License
 
-This document is provided as a technical reference. See individual protocol references within the document for their respective licenses and governance.
+This work is licensed under a [Creative Commons Attribution 4.0 International License (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/).
+
+© 2026 David Gwartney (david.gwartney@gmail.com)
