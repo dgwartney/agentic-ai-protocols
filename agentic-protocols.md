@@ -11,7 +11,6 @@ fontsize: 11pt
 colorlinks: true
 linkcolor: blue
 urlcolor: blue
-monofont: "DejaVu Sans Mono"
 ---
 \newpage
 # Introduction
@@ -38,30 +37,27 @@ Protocols in the agentic context serve three purposes:
 3. **Governance and trust** — Standardized authentication, identity, and authorization patterns
    reduce the attack surface of multi-agent systems and enable auditable agent behavior.
 
-
 ## How the Layers Relate
 
 The five categories in this survey correspond to distinct concerns in the agentic stack:
 
-```
-┌──────────────────────────────────────────────────────────────────────────┐
-│                    Category 5: Specialized Domain                        │
-│              ACP-Commerce · AP2 · TDF · Agora                            │
-├──────────────────────────────────────────────────────────────────────────┤
-│                    Category 4: Agent-User Interaction                    │
-│                            AG-UI                                         │
-├──────────────────────────────────────────────────────────────────────────┤
-│              Category 2: Agent-to-Agent Communication                    │
-│                      A2A · ACP · OAP                                     │
-├──────────────────────────────────────────────────────────────────────────┤
-│            Category 3: Networking & Identity Infrastructure              │
-│                      ANP · AGP · LMOS                                    │
-├──────────────────────────────────────────────────────────────────────────┤
-│               Category 1: Context & Tool Interaction                     │
-│                   MCP · TAP · FCP · UTCP                                 │
-└──────────────────────────────────────────────────────────────────────────┘
-                         ▲
-                    LLM / Model Layer
+```mermaid
+flowchart TD
+    C5["<b>Category 5: Specialized Domain</b><br/>ACP-Commerce · AP2 · TDF · Agora"]
+    C4["<b>Category 4: Agent-User Interaction</b><br/>AG-UI"]
+    C2["<b>Category 2: Agent-to-Agent Communication</b><br/>A2A · ACP · OAP"]
+    C3["<b>Category 3: Networking &amp; Identity Infrastructure</b><br/>ANP · AGP · LMOS"]
+    C1["<b>Category 1: Context &amp; Tool Interaction</b><br/>MCP · TAP · FCP · UTCP"]
+    LLM(["LLM / Model Layer"])
+
+    C5 --- C4 --- C2 --- C3 --- C1 --- LLM
+
+    style C5 fill:#e8f4fd,stroke:#333
+    style C4 fill:#e8f4fd,stroke:#333
+    style C2 fill:#e8f4fd,stroke:#333
+    style C3 fill:#e8f4fd,stroke:#333
+    style C1 fill:#e8f4fd,stroke:#333
+    style LLM fill:#fff3cd,stroke:#333
 ```
 
 **Category 1** sits closest to the model: it defines how agents discover and invoke tools and
@@ -89,13 +85,13 @@ and computational resources. They solve the problem of capability extension: an 
 own cannot browse the web, query a database, or call a REST API — tool interaction protocols
 define the interface through which these capabilities are exposed and invoked.
 
-## MCP (Model Context Protocol)
+## MCP (Model Context Protocol)^1^
 
 | Field | Details |
 |---|---|
-| **Developer/Origin** | Anthropic (donated to Linux Foundation, Dec 2025) |
+| **Developer/Origin** | Anthropic (donated to Linux Foundation, Dec 2025)^2^ |
 | **Released** | November 2024 |
-| **Governance** | Linux Foundation (Anthropic retaining specification stewardship) |
+| **Governance** | Linux Foundation (Anthropic retaining specification stewardship)^3^ |
 | **Current Status** | Production standard; de facto cross-vendor tool protocol |
 
 **Technical Overview**
@@ -131,25 +127,35 @@ support is implemented via the sampling mechanism, where the server can request 
 host invoke a model completion — enabling multi-step tool workflows that pause for model
 reasoning at intermediate steps.
 
-```
-  Host Application
-  ┌──────────────────────────────────────────┐
-  │  LLM           MCP Client                │
-  │  ┌──────┐      ┌───────────────────┐     │
-  │  │model │◄────►│  session manager  │─────┼──► MCP Server A (database)
-  │  └──────┘      │  capability cache │─────┼──► MCP Server B (filesystem)
-  │                └───────────────────┘─────┼──► MCP Server C (web search)
-  └──────────────────────────────────────────┘
+```mermaid
+flowchart LR
+    subgraph Host["Host Application"]
+        LLM["LLM<br/>(model)"]
+        subgraph Client["MCP Client"]
+            SM["session manager"]
+            CC["capability cache"]
+        end
+        LLM <-->|"requests"| SM
+    end
+    Client -->|"stdio / HTTP"| A["MCP Server A<br/>(database)"]
+    Client -->|"stdio / HTTP"| B["MCP Server B<br/>(filesystem)"]
+    Client -->|"stdio / HTTP"| C["MCP Server C<br/>(web search)"]
+
+    style Host fill:#f0f4ff,stroke:#333
+    style Client fill:#e8f4fd,stroke:#666
+    style A fill:#d4edda,stroke:#333
+    style B fill:#d4edda,stroke:#333
+    style C fill:#d4edda,stroke:#333
 ```
 
 **Wire Format & Transport**
 
 | Aspect | Detail |
 |---|---|
-| **Encoding** | JSON-RPC 2.0 (JSON) |
-| **Transport — local** | stdio (stdin/stdout pipe between host and subprocess server) |
-| **Transport — remote** | HTTP with Server-Sent Events (SSE); streamable HTTP (2025 spec update) |
-| **Authentication** | OAuth 2.0 (remote servers); process isolation (local stdio) |
+| **Encoding** </br>| JSON-RPC 2.0 (JSON) </br> |
+| **Transport — local** | stdio (stdin/stdout pipe between host and subprocess server) </br> |
+| **Transport — remote** | HTTP with Server-Sent Events (SSE); streamable HTTP (2025 spec update) </br> |
+| **Authentication** | OAuth 2.0 (remote servers); process isolation (local stdio) </br> |
 | **Schema validation** | JSON Schema for tool input/output definitions |
 
 The stdio transport is used for local tool servers running as subprocesses — the host spawns
@@ -191,7 +197,7 @@ The primary criticism is the requirement for a wrapper server process, which UTC
 
 ---
 
-## TAP (Tool Abstraction Protocol)
+## TAP (Tool Abstraction Protocol)^4^
 
 | Field | Details |
 |---|---|
@@ -260,12 +266,12 @@ TAP is best understood as a design pattern rather than an interoperability stand
 
 ---
 
-## FCP (Function Call Protocol)
+## FCP (Function Call Protocol)^5^
 
 | Field | Details |
 |---|---|
 | **Developer/Origin** | OpenAI |
-| **Released** | June 2023 (parallel function calling: November 2023; Structured Outputs: August 2024) |
+| **Released** | June 2023 (parallel function calling: November 2023; Structured Outputs: August 2024)^6^ |
 | **Governance** | OpenAI (proprietary vendor API) |
 | **Current Status** | Mature; vendor-specific; widely adopted within OpenAI ecosystem |
 
@@ -332,7 +338,7 @@ tool server can be exposed to a model via FCP-style function calls.
 
 ---
 
-## UTCP (Universal Tool Calling Protocol)
+## UTCP (Universal Tool Calling Protocol)^7^
 
 | Field | Details |
 |---|---|
@@ -372,18 +378,29 @@ An agent implementing UTCP:
 3. Calls the tool's native endpoint directly using the specified protocol
 4. Parses the response according to the output schema
 
-```
-  Agent
-  ┌────────────────────────────────────────────┐
-  │                                            │
-  │  ┌──────────────┐   ┌───────────────────┐  │
-  │  │ LLM / Planner│──►│  UTCP Transport   │──┼──► REST API (HTTP)
-  │  └──────────────┘   │  Dispatcher       │──┼──► gRPC Service
-  │                     │                   │──┼──► WebSocket Server
-  │  ┌──────────────┐   │                   │──┼──► CLI Tool
-  │  │ Tool Manual  │──►│                   │  │
-  │  │  (JSON)      │   └───────────────────┘  │
-  └──┴──────────────┴──────────────────────────┘
+```mermaid
+flowchart LR
+    subgraph Agent["Agent"]
+        LLM["LLM / Planner"]
+        Manual["Tool Manual<br/>(JSON)"]
+        subgraph Dispatcher["UTCP Transport Dispatcher"]
+            D[" "]
+        end
+        LLM --> Dispatcher
+        Manual --> Dispatcher
+    end
+    Dispatcher --> REST["REST API (HTTP)"]
+    Dispatcher --> GRPC["gRPC Service"]
+    Dispatcher --> WS["WebSocket Server"]
+    Dispatcher --> CLI["CLI Tool"]
+
+    style Agent fill:#f0f4ff,stroke:#333
+    style Dispatcher fill:#e8f4fd,stroke:#666
+    style REST fill:#d4edda,stroke:#333
+    style GRPC fill:#d4edda,stroke:#333
+    style WS fill:#d4edda,stroke:#333
+    style CLI fill:#d4edda,stroke:#333
+    style D fill:none,stroke:none
 ```
 
 UTCP supports OpenAPI 2.0 and 3.0 auto-ingestion: given an OpenAPI spec, a UTCP-compatible
@@ -422,12 +439,12 @@ capability discovery across agent boundaries, asynchronous task management, and 
 of agents that may be implemented in different languages, run on different infrastructure,
 and have different capability profiles.
 
-## A2A (Agent-to-Agent Protocol)
+## A2A (Agent-to-Agent Protocol)^8^
 
 | Field | Details |
 |---|---|
-| **Developer/Origin** | Google (donated to Linux Foundation, 2025) |
-| **Released** | April 2025 |
+| **Developer/Origin** | Google (donated to Linux Foundation, 2025)^9^ |
+| **Released** | April 2025^10^ |
 | **Governance** | Linux Foundation |
 | **Current Status** | Production; major framework support; absorbed ACP (December 2025) |
 
@@ -465,19 +482,22 @@ state for minutes or hours. The `input_required` state models human-in-the-loop 
 where the remote agent needs additional input before proceeding. Streaming task output
 (intermediate artifacts) is supported via SSE.
 
-```
-  Client Agent                              Remote Agent
-  ┌──────────────────┐                      ┌──────────────────────────┐
-  │                  │  GET /.well-known/   │                          │
-  │  1. Discover     │──agent.json─────────►│  Agent Card              │
-  │                  │◄─────────────────────│  {skills, endpoint, auth}│
-  │                  │                      │                          │
-  │  2. Submit Task  │──POST /tasks────────►│  Task Handler            │
-  │                  │◄─── task_id ─────────│                          │
-  │                  │                      │                          │
-  │  3. Monitor      │──GET /tasks/{id}────►│  Task State              │
-  │     (or SSE)     │◄── status/artifacts ─│  {working → completed}   │
-  └──────────────────┘                      └──────────────────────────┘
+```mermaid
+sequenceDiagram
+    participant C as Client Agent
+    participant R as Remote Agent
+
+    Note over C,R: 1. Discover
+    C->>R: GET /.well-known/agent.json
+    R-->>C: Agent Card {skills, endpoint, auth}
+
+    Note over C,R: 2. Submit Task
+    C->>R: POST /tasks
+    R-->>C: task_id
+
+    Note over C,R: 3. Monitor
+    C->>R: GET /tasks/{id} (or SSE)
+    R-->>C: status / artifacts {working → completed}
 ```
 
 **Wire Format & Transport**
@@ -511,13 +531,13 @@ specification.
 
 ---
 
-## ACP (Agent Communication Protocol)
+## ACP (Agent Communication Protocol)^11^
 
 | Field | Details |
 |---|---|
 | **Developer/Origin** | IBM / BeeAI |
 | **Released** | May 2025 |
-| **Governance** | Linux Foundation (merged into A2A governance, December 2025) |
+| **Governance** | Linux Foundation (merged into A2A governance, December 2025)^12^ |
 | **Current Status** | Merged into A2A; preserved as RESTful profile |
 
 **Technical Overview**
@@ -569,7 +589,7 @@ the A2A specification under Linux Foundation governance is the appropriate targe
 
 ---
 
-## OAP (Open Agent Platform)
+## OAP (Open Agent Platform)^13^
 
 | Field | Details |
 |---|---|
@@ -631,7 +651,7 @@ boundaries, and how trust is established between agents that may be operated by 
 entities. These protocols draw heavily on existing web standards (W3C DID, WebSockets, MQTT)
 and enterprise networking patterns (BGP-inspired routing, mTLS, RBAC).
 
-## ANP (Agent Network Protocol)
+## ANP (Agent Network Protocol)^14^
 
 | Field | Details |
 |---|---|
@@ -657,20 +677,17 @@ pre-established relationships.
 
 ANP uses a three-layer architecture:
 
-```
-  ┌──────────────────────────────────────────────────────┐
-  │  Layer 3: Application                                │
-  │  Semantic capability descriptions (JSON-LD)          │
-  │  Domain-specific message schemas                     │
-  ├──────────────────────────────────────────────────────┤
-  │  Layer 2: Meta-Protocol                              │
-  │  Dynamic protocol negotiation                        │
-  │  Capability discovery and matching                   │
-  ├──────────────────────────────────────────────────────┤
-  │  Layer 1: Identity & Encryption                      │
-  │  W3C DID-based agent identity                        │
-  │  End-to-end encryption (DID-linked keys)             │
-  └──────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    L3["<b>Layer 3: Application</b><br/>Semantic capability descriptions (JSON-LD)<br/>Domain-specific message schemas"]
+    L2["<b>Layer 2: Meta-Protocol</b><br/>Dynamic protocol negotiation<br/>Capability discovery and matching"]
+    L1["<b>Layer 1: Identity &amp; Encryption</b><br/>W3C DID-based agent identity<br/>End-to-end encryption (DID-linked keys)"]
+
+    L3 --- L2 --- L1
+
+    style L3 fill:#e8f4fd,stroke:#333
+    style L2 fill:#d4edda,stroke:#333
+    style L1 fill:#fff3cd,stroke:#333
 ```
 
 - **Identity layer** - Each agent is identified by a W3C DID. DID Documents describe the
@@ -709,13 +726,13 @@ complexity that may slow initial adoption.
 
 ---
 
-## AGP (Agent Gateway Protocol)
+## AGP (Agent Gateway Protocol)^15^
 
 | Field | Details |
 |---|---|
 | **Developer/Origin** | Cisco / AGNTCY |
 | **Released** | 2025 |
-| **Governance** | Cisco / AGNTCY consortium |
+| **Governance** | Cisco / AGNTCY consortium^16^ |
 | **Current Status** | Early production; enterprise-focused |
 
 **Technical Overview**
@@ -743,14 +760,28 @@ AGP is built on gRPC and uses Protocol Buffers for message encoding. Key feature
 - **Message inspection** — Gateway nodes can inspect and log all inter-agent traffic for
   audit and compliance purposes
 
-```
-  Domain A                    AGP Gateway              Domain B
-  ┌──────────────────┐        ┌──────────┐        ┌──────────────────┐
-  │  Agent 1 ────────┼──mTLS──►          │◄──mTLS─┼──── Agent 3      │
-  │  Agent 2 ────────┼──mTLS──►  Router  │◄──mTLS─┼──── Agent 4      │
-  └──────────────────┘        │  + RBAC  │        └──────────────────┘
-                              │  + Audit │
-                              └──────────┘
+```mermaid
+flowchart LR
+    subgraph DomA["Domain A"]
+        A1["Agent 1"]
+        A2["Agent 2"]
+    end
+    subgraph GW["AGP Gateway"]
+        R["Router<br/>+ RBAC<br/>+ Audit"]
+    end
+    subgraph DomB["Domain B"]
+        A3["Agent 3"]
+        A4["Agent 4"]
+    end
+
+    A1 -->|"mTLS"| R
+    A2 -->|"mTLS"| R
+    R -->|"mTLS"| A3
+    R -->|"mTLS"| A4
+
+    style DomA fill:#e8f4fd,stroke:#333
+    style GW fill:#fff3cd,stroke:#333
+    style DomB fill:#d4edda,stroke:#333
 ```
 
 **Wire Format & Transport**
@@ -783,11 +814,11 @@ startup or research contexts.
 
 ---
 
-## LMOS Protocol
+## LMOS Protocol^17^
 
 | Field | Details |
 |---|---|
-| **Developer/Origin** | Eclipse Foundation (primary contributor: Deutsche Telekom) |
+| **Developer/Origin** | Eclipse Foundation (primary contributor: Deutsche Telekom)^18^ |
 | **Released** | 2024–2025 |
 | **Governance** | Eclipse Foundation |
 | **Current Status** | Production (Deutsche Telekom: millions of interactions) |
@@ -817,22 +848,25 @@ LMOS defines:
 - **Kubernetes Operator** — LMOS agents are deployed as Kubernetes custom resources; the
   operator manages scaling, routing, and lifecycle
 
-```
-  ┌──────────────────────────────────────────────────────────────┐
-  │  LMOS Platform                                               │
-  │  ┌─────────────────┐  ┌───────────────────────────────────┐  │
-  │  │  Agent Registry │  │  Channel Adapter                  │  │
-  │  │  (W3C WoT TDs)  │  │  HTTP │ WebSocket │ MQTT │ AMQP   │  │
-  │  └─────────────────┘  └───────────────────────────────────┘  │
-  │  ┌────────────────────────────────────────────────────────┐  │
-  │  │  ARC Agent Framework (Kotlin/JVM)                      │  │
-  │  │  Agent logic + LMOS protocol bindings                  │  │
-  │  └────────────────────────────────────────────────────────┘  │
-  │  ┌────────────────────────────────────────────────────────┐  │
-  │  │  Kubernetes Operator                                   │  │
-  │  │  Custom resource definitions for agent deployment      │  │
-  │  └────────────────────────────────────────────────────────┘  │
-  └──────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    subgraph Platform["LMOS Platform"]
+        direction TB
+        Registry["<b>Agent Registry</b><br/>(W3C WoT TDs)"]
+        Channel["<b>Channel Adapter</b><br/>HTTP | WebSocket | MQTT | AMQP"]
+        ARC["<b>ARC Agent Framework</b> (Kotlin/JVM)<br/>Agent logic + LMOS protocol bindings"]
+        K8s["<b>Kubernetes Operator</b><br/>Custom resource definitions for agent deployment"]
+
+        Registry --- ARC
+        Channel --- ARC
+        ARC --- K8s
+    end
+
+    style Platform fill:#f0f4ff,stroke:#333
+    style Registry fill:#e8f4fd,stroke:#666
+    style Channel fill:#e8f4fd,stroke:#666
+    style ARC fill:#d4edda,stroke:#666
+    style K8s fill:#fff3cd,stroke:#666
 ```
 
 **Wire Format & Transport**
@@ -872,11 +906,11 @@ Category 4 protocols govern how agents communicate back to users — streaming i
 reasoning, rendering tool call results, synchronizing application state, and supporting
 the rich interactive patterns that modern AI-powered applications require.
 
-## AG-UI (Agent-User Interaction Protocol)
+## AG-UI (Agent-User Interaction Protocol)^19^
 
 | Field | Details |
 |---|---|
-| **Developer/Origin** | CopilotKit (in partnership with LangGraph and CrewAI) |
+| **Developer/Origin** | CopilotKit (in partnership with LangGraph and CrewAI)^20^ |
 | **Released** | 2025 |
 | **Governance** | CopilotKit / Community |
 | **Current Status** | Rapidly growing; broad framework adoption |
@@ -931,20 +965,7 @@ The state synchronization mechanism is particularly notable: agents can maintain
 with the UI application, enabling features like showing the agent's current reasoning, plan,
 or data context in real-time. State deltas use JSON Patch (RFC 6902) format.
 
-```
-  Agent (backend)                          UI Application (frontend)
-  ┌──────────────────────────────┐         ┌──────────────────────────────┐
-  │  Agent Runtime               │         │  AG-UI Event Consumer        │
-  │  ┌──────────────────────┐    │  HTTP   │  ┌──────────────────────┐    │
-  │  │  Execution Logic     │    │  POST   │  │  Event Router        │    │
-  │  │  (LangGraph/CrewAI)  │────┼────────►│  │  + State Store       │    │
-  │  └──────────────────────┘    │  SSE ◄──┼──│                      │    │
-  │  ┌──────────────────────┐    │  stream │  └──────────────────────┘    │
-  │  │  AG-UI Event Emitter │    │         │  ┌──────────────────────┐    │
-  │  │  (typed event stream)│    │         │  │  UI Components       │    │
-  │  └──────────────────────┘    │         │  │  (React, Vue, etc.)  │    │
-  └──────────────────────────────┘         └──────────────────────────────┘
-```
+![AG-UI Architecture](ag-ui-architecture.svg){width=100%}
 
 **Wire Format & Transport**
 
@@ -989,7 +1010,7 @@ Category 5 covers protocols that apply agentic interaction patterns to specific 
 domains (commerce, payments) as well as academic protocols exploring new theoretical
 models for agent communication.
 
-## Agentic Commerce Protocol (ACP-Commerce)
+## Agentic Commerce Protocol (ACP-Commerce)^21^
 
 > **Note on naming:** This protocol is distinct from IBM's ACP (Agent Communication Protocol,
 > Category 2). The collision of the "ACP" acronym across two unrelated protocols is a source
@@ -997,9 +1018,9 @@ models for agent communication.
 
 | Field | Details |
 |---|---|
-| **Developer/Origin** | Stripe + OpenAI |
+| **Developer/Origin** | Stripe + OpenAI^22^ |
 | **Released** | 2025 |
-| **Governance** | Apache 2.0 (open source) |
+| **Governance** | Apache 2.0 (open source)^23^ |
 | **Current Status** | Production; live integrations with Etsy and others |
 
 **Technical Overview**
@@ -1060,11 +1081,11 @@ merchant without additional integration work. Apache 2.0 licensing removes barri
 
 ---
 
-## AP2 (Agent Payments Protocol)
+## AP2 (Agent Payments Protocol)^24^
 
 | Field | Details |
 |---|---|
-| **Developer/Origin** | Google + 60+ partner organizations |
+| **Developer/Origin** | Google + 60+ partner organizations^25^ |
 | **Released** | 2025 |
 | **Governance** | Multi-stakeholder (Google-led; 60+ org consortium) |
 | **Current Status** | Early production; strong organizational backing |
@@ -1096,19 +1117,20 @@ AP2 builds on A2A and MCP as transport substrates:
 - **A2A×402 extension** — For cryptocurrency payments, integrates with Coinbase's HTTP 402
   payment channel protocol; enables micropayment flows native to the A2A task lifecycle
 
-```
-  Human User                                          Payment Network
-  ┌──────────┐                                        ┌──────────────┐
-  │  Issues  │──── Signed VC (mandate) ────────────►  │              │
-  │  Mandate │                                        │   Verifier   │
-  └──────────┘                                        └──────┬───────┘
-                                                             │ verified
-  ┌──────────┐   A2A task / MCP tool call                    │
-  │  Agent   │──── mandate attached ──────────────────────►  │
-  │          │◄─── payment result ────────────────────────   │
-  └──────────┘                                        ┌──────▼───────┐
-                                                      │  Processor   │
-                                                      └──────────────┘
+```mermaid
+sequenceDiagram
+    participant H as Human User
+    participant A as Agent
+    box Payment Network
+        participant V as Verifier
+        participant P as Processor
+    end
+
+    H->>V: Signed VC (mandate)
+    V->>V: Verify credential
+    A->>V: A2A task / MCP tool call (mandate attached)
+    V->>P: Verified payment request
+    P-->>A: Payment result
 ```
 
 **Wire Format & Transport**
@@ -1167,11 +1189,11 @@ public documentation. Engineers should not rely on TDF availability for producti
 
 ---
 
-## Agora Protocol
+## Agora Protocol^26^
 
 | Field | Details |
 |---|---|
-| **Developer/Origin** | Academic (arXiv: 2410.11905) |
+| **Developer/Origin** | Academic (arXiv: 2410.11905)^27^ |
 | **Released** | October 2024 (arXiv preprint) |
 | **Governance** | Academic / open (no formal governance) |
 | **Current Status** | Research stage; not production deployed |
@@ -1292,50 +1314,7 @@ networks is the most significant open problem in the protocol landscape.
 The following diagram illustrates how the major protocols complement each other in a
 representative multi-agent production architecture:
 
-```
-  ┌─────────────────────────────────────────────────────────────────────────────┐
-  │  USER / FRONTEND                                                            │
-  │                          AG-UI (event stream over HTTP/SSE)                 │
-  └──────────────────────────────────────┬──────────────────────────────────────┘
-                                         │
-  ┌──────────────────────────────────────▼──────────────────────────────────────┐
-  │  ORCHESTRATOR AGENT                                                         │
-  │  (LangGraph / CrewAI / AutoGen)                                             │
-  │                                                                             │
-  │   Calls sub-agents ──── A2A ────► Specialized Agent A (research)            │
-  │   via task delegation             Specialized Agent B (writing)             │
-  │                                   Specialized Agent C (code execution)      │
-  │                                                                             │
-  │   Accesses tools ───── MCP ────► MCP Server: Database                       │
-  │                                  MCP Server: Web Search                     │
-  │                                  MCP Server: File System                    │
-  │                                  ACP-Commerce MCP Server (shopping)         │
-  └─────────────────────────────────────────────────────────────────────────────┘
-
-  ┌─────────────────────────────────────────────────────────────────────────────┐
-  │  NETWORKING / IDENTITY LAYER (optional, for enterprise / multi-org)         │
-  │                                                                             │
-  │   AGP (Cisco) ── gRPC routing + mTLS for cross-domain agent communication   │
-  │   LMOS ─────── Protocol-agnostic agent registry + W3C WoT capability desc   │
-  │   ANP ──────── DID-based identity + peer-to-peer agent discovery            │
-  └─────────────────────────────────────────────────────────────────────────────┘
-
-  ┌─────────────────────────────────────────────────────────────────────────────┐
-  │  MODEL LAYER                                                                │
-  │                                                                             │
-  │   FCP (OpenAI function calling) ── tool invocation within single LLM call   │
-  │   TAP (LangChain) ────────────── tool metadata within LangChain runtime     │
-  └─────────────────────────────────────────────────────────────────────────────┘
-
-  ┌─────────────────────────────────────────────────────────────────────────────-┐
-  │  DOMAIN / SPECIALIZED LAYER                                                  │
-  │                                                                              │
-  │   ACP-Commerce ── agent-initiated checkout via REST or MCP                   │
-  │   AP2 ─────────── cryptographic mandate model for agent payments             │
-  │   UTCP ─────────── lightweight alternative to MCP (native endpoint access)   │
-  │   Agora ────────── research: meta-protocol for communication mode negotiation│
-  └────────────────────────────────────────────────────────────────────────────--┘
-```
+![Protocol Stack Reference](protocol-stack.svg){width=100%}
 \newpage
 # Conclusion
 
@@ -1388,8 +1367,65 @@ Engineers entering the agentic protocol space today should invest in MCP and A2A
 as foundational, treat AG-UI as important for any user-facing application, and monitor the
 identity/payment infrastructure layer for the next wave of standardization.
 
----
+\newpage
 
 *This document was compiled from public specifications, framework documentation, and technical
 announcements available as of February 2026. Protocol specifications evolve rapidly; consult
 official governance repositories for current status.*
+
+\newpage
+# References
+
+1. Model Context Protocol — Official specification and documentation. <https://modelcontextprotocol.io>; GitHub: <https://github.com/modelcontextprotocol>
+
+2. Anthropic, "Donating the Model Context Protocol and Establishing the Agentic AI Foundation," December 2025. <https://www.anthropic.com/news/donating-the-model-context-protocol-and-establishing-of-the-agentic-ai-foundation>
+
+3. Linux Foundation, "Linux Foundation Announces the Formation of the Agentic AI Foundation," December 2025. <https://www.linuxfoundation.org/press/linux-foundation-announces-the-formation-of-the-agentic-ai-foundation>
+
+4. LangChain, "Tools — Concepts." LangChain Python documentation. <https://python.langchain.com/docs/concepts/tools/>
+
+5. OpenAI, "Function Calling." OpenAI API documentation. <https://developers.openai.com/api/docs/guides/function-calling/>
+
+6. OpenAI, "Introducing Structured Outputs in the API," August 2024. <https://openai.com/index/introducing-structured-outputs-in-the-api/>
+
+7. Universal Tool Calling Protocol — Specification and SDKs. <https://www.utcp.io/>; GitHub: <https://github.com/universal-tool-calling-protocol/utcp-specification>
+
+8. Agent-to-Agent Protocol — Official specification. <https://a2a-protocol.org/latest/specification/>; GitHub: <https://github.com/a2aproject/A2A>
+
+9. Google Developers Blog, "Google Cloud Donates A2A to Linux Foundation," 2025. <https://developers.googleblog.com/en/google-cloud-donates-a2a-to-linux-foundation/>
+
+10. Google Developers Blog, "A2A: A New Era of Agent Interoperability," April 2025. <https://developers.googleblog.com/en/a2a-a-new-era-of-agent-interoperability/>
+
+11. IBM BeeAI — Agent Communication Protocol. GitHub: <https://github.com/i-am-bee/acp>
+
+12. LF AI & Data Foundation, "ACP Joins Forces with A2A under the Linux Foundation's LF AI & Data," August 2025. <https://lfaidata.foundation/communityblog/2025/08/29/acp-joins-forces-with-a2a-under-the-linux-foundations-lf-ai-data/>
+
+13. LangChain, "Open Agent Platform — No-Code Platform to Build Agents." GitHub: <https://github.com/langchain-ai/open-agent-platform>; Announcement: <https://changelog.langchain.com/announcements/open-agent-platform-no-code-platform-to-build-agents>
+
+14. Agent Network Protocol — Official site and specification. <https://www.agent-network-protocol.com/>; GitHub: <https://github.com/agent-network-protocol/AgentNetworkProtocol>
+
+15. AGNTCY — Agent Gateway Protocol documentation. <https://docs.agntcy.org/>; GitHub: <https://github.com/agntcy/slim>
+
+16. Cisco Outshift Blog, "AGNTCY: Internet of Agents is on GitHub." <https://outshift.cisco.com/blog/agntcy-internet-of-agents-is-on-github>
+
+17. Eclipse LMOS — Project page and documentation. <https://eclipse.dev/lmos/>; GitHub: <https://github.com/eclipse-lmos>
+
+18. Eclipse Foundation, "Eclipse LMOS Project Proposal." <https://projects.eclipse.org/proposals/eclipse-lmos>
+
+19. AG-UI Protocol — Official documentation. <https://docs.ag-ui.com/>; GitHub: <https://github.com/ag-ui-protocol/ag-ui>
+
+20. CopilotKit Blog, "AG-UI Protocol: Bridging Agents to Any Front End," 2025. <https://www.copilotkit.ai/blog/ag-ui-protocol-bridging-agents-to-any-front-end>
+
+21. Agentic Commerce Protocol — Official site and specification. <https://www.agenticcommerce.dev/>
+
+22. Stripe Newsroom, "Stripe and OpenAI Announce Instant Checkout for Agentic Commerce." <https://stripe.com/newsroom/news/stripe-openai-instant-checkout>
+
+23. Agentic Commerce Protocol — GitHub repository (Apache 2.0). <https://github.com/agentic-commerce-protocol/agentic-commerce-protocol>; Stripe Blog: <https://stripe.com/blog/developing-an-open-standard-for-agentic-commerce>
+
+24. Agent Payments Protocol (AP2) — Official documentation. <https://ap2-protocol.org/>; GitHub: <https://github.com/google-agentic-commerce/AP2>
+
+25. Google Cloud Blog, "Announcing Agents to Payments (AP2) Protocol." <https://cloud.google.com/blog/products/ai-machine-learning/announcing-agents-to-payments-ap2-protocol>
+
+26. Agora Protocol — Official site. <https://agoraprotocol.org/>; GitHub demo: <https://github.com/agora-protocol/paper-demo>
+
+27. Agora Protocol — arXiv preprint (2410.11905). <https://arxiv.org/abs/2410.11905>

@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 620" font-family="DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13">
+  <defs>
+    <style>
+      .box { rx: 6; ry: 6; }
+      .title { font-weight: bold; font-size: 14px; }
+      .item { font-size: 12px; fill: #333; }
+    </style>
+  </defs>
+
+  <!-- Layer 1: USER / FRONTEND -->
+  <rect class="box" x="20" y="10" width="760" height="50" fill="#e8f4fd" stroke="#333" stroke-width="1.5"/>
+  <text class="title" x="400" y="30" text-anchor="middle">USER / FRONTEND</text>
+  <text class="item" x="400" y="48" text-anchor="middle">AG-UI (event stream over HTTP/SSE)</text>
+
+  <!-- Connector -->
+  <line x1="400" y1="60" x2="400" y2="75" stroke="#333" stroke-width="1.5"/>
+  <polygon points="395,75 405,75 400,82" fill="#333"/>
+
+  <!-- Layer 2: ORCHESTRATOR AGENT -->
+  <rect class="box" x="20" y="82" width="760" height="220" fill="#f0f4ff" stroke="#333" stroke-width="1.5"/>
+  <text class="title" x="400" y="104" text-anchor="middle">ORCHESTRATOR AGENT (LangGraph / CrewAI / AutoGen)</text>
+
+  <!-- A2A sub-block -->
+  <rect class="box" x="40" y="115" width="350" height="175" fill="#d4edda" stroke="#666" stroke-width="1"/>
+  <text class="item" x="215" y="135" text-anchor="middle" font-weight="bold">Calls sub-agents — A2A</text>
+  <text class="item" x="215" y="160" text-anchor="middle">Specialized Agent A (research)</text>
+  <text class="item" x="215" y="182" text-anchor="middle">Specialized Agent B (writing)</text>
+  <text class="item" x="215" y="204" text-anchor="middle">Specialized Agent C (code execution)</text>
+
+  <!-- MCP sub-block -->
+  <rect class="box" x="410" y="115" width="355" height="175" fill="#d4edda" stroke="#666" stroke-width="1"/>
+  <text class="item" x="587" y="135" text-anchor="middle" font-weight="bold">Accesses tools — MCP</text>
+  <text class="item" x="587" y="160" text-anchor="middle">MCP Server: Database</text>
+  <text class="item" x="587" y="182" text-anchor="middle">MCP Server: Web Search</text>
+  <text class="item" x="587" y="204" text-anchor="middle">MCP Server: File System</text>
+  <text class="item" x="587" y="226" text-anchor="middle">ACP-Commerce MCP Server (shopping)</text>
+
+  <!-- Connector -->
+  <line x1="400" y1="302" x2="400" y2="317" stroke="#333" stroke-width="1.5"/>
+  <polygon points="395,317 405,317 400,324" fill="#333"/>
+
+  <!-- Layer 3: NETWORKING / IDENTITY -->
+  <rect class="box" x="20" y="324" width="760" height="95" fill="#fff3cd" stroke="#333" stroke-width="1.5"/>
+  <text class="title" x="400" y="346" text-anchor="middle">NETWORKING / IDENTITY LAYER (optional, enterprise / multi-org)</text>
+  <text class="item" x="40" y="370">AGP (Cisco) — gRPC routing + mTLS for cross-domain agent communication</text>
+  <text class="item" x="40" y="390">LMOS — Protocol-agnostic agent registry + W3C WoT capability desc</text>
+  <text class="item" x="40" y="410">ANP — DID-based identity + peer-to-peer agent discovery</text>
+
+  <!-- Connector -->
+  <line x1="400" y1="419" x2="400" y2="434" stroke="#333" stroke-width="1.5"/>
+  <polygon points="395,434 405,434 400,441" fill="#333"/>
+
+  <!-- Layer 4: MODEL LAYER -->
+  <rect class="box" x="20" y="441" width="760" height="70" fill="#fce4ec" stroke="#333" stroke-width="1.5"/>
+  <text class="title" x="400" y="463" text-anchor="middle">MODEL LAYER</text>
+  <text class="item" x="40" y="483">FCP (OpenAI function calling) — tool invocation within single LLM call</text>
+  <text class="item" x="40" y="500">TAP (LangChain) — tool metadata within LangChain runtime</text>
+
+  <!-- Connector -->
+  <line x1="400" y1="511" x2="400" y2="526" stroke="#333" stroke-width="1.5"/>
+  <polygon points="395,526 405,526 400,533" fill="#333"/>
+
+  <!-- Layer 5: DOMAIN / SPECIALIZED -->
+  <rect class="box" x="20" y="533" width="760" height="80" fill="#f3e5f5" stroke="#333" stroke-width="1.5"/>
+  <text class="title" x="400" y="555" text-anchor="middle">DOMAIN / SPECIALIZED LAYER</text>
+  <text class="item" x="40" y="575">ACP-Commerce — agent-initiated checkout via REST or MCP</text>
+  <text class="item" x="40" y="592">AP2 — cryptographic mandate model for agent payments</text>
+  <text class="item" x="450" y="575">UTCP — lightweight alternative to MCP (native endpoint access)</text>
+  <text class="item" x="450" y="592">Agora — meta-protocol for communication mode negotiation</text>
+</svg>
