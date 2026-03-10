@@ -1,5 +1,5 @@
-SRC := agentic-protocols.md
-PDF := $(SRC:.md=.pdf)
+SRCS := agentic-protocols.md a2a-transport-protocol-support.md
+PDFS := $(SRCS:.md=.pdf)
 
 PANDOC_OPTS := \
 	--pdf-engine=xelatex \
@@ -11,10 +11,13 @@ PANDOC_OPTS := \
 
 .PHONY: all clean
 
-all: $(PDF)
+all: $(PDFS)
 
-$(PDF): $(SRC) ag-ui-architecture.svg protocol-stack.svg
+agentic-protocols.pdf: agentic-protocols.md ag-ui-architecture.svg protocol-stack.svg
+	pandoc $(PANDOC_OPTS) -o $@ $<
+
+a2a-transport-protocol-support.pdf: a2a-transport-protocol-support.md
 	pandoc $(PANDOC_OPTS) -o $@ $<
 
 clean:
-	rm -f $(PDF)
+	rm -f $(PDFS)
