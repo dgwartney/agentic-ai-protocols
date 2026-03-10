@@ -1,7 +1,7 @@
 ---
 title: "A2A Transport Protocol Support"
 subtitle: "Framework Compatibility Matrix and Analysis"
-author: "David Gwartney (david.gwartney@gmail.com)"
+author: "David Gwartney (david.gwartney@kore.com)"
 date: "March 2026"
 rights: "© 2026 David Gwartney. Licensed under CC BY 4.0"
 toc: true
@@ -44,14 +44,13 @@ and gRPC. While all three are treated as equal by the spec, framework implementa
 widely in which transports they expose, how they are configured, and what spec version they
 target.
 
-**Audience.** This document is written for Sales Engineers and Product Managers evaluating
-agentic framework options. It provides a single reference for comparing transport support
+**Audience.** This document is written for those evaluating agentic framework options.
+It provides a single reference for comparing transport support
 across 14 frameworks, understanding spec version alignment, and identifying gaps or caveats
 in each framework's A2A implementation.
 
 **Scope.** The analysis covers 14 frameworks across three transports, tracking A2A spec
-versions from v0.1.0 through Draft v1.0. Five inaccuracies identified in an earlier audit
-have been corrected inline throughout this document.
+versions from v0.1.0 through Draft v1.0.
 
 \newpage
 # A2A Specification Version History
@@ -460,30 +459,6 @@ rather than user configuration. JSON-RPC is the production-supported path.
 7. **The IBM ACP merger expanded the ecosystem.** BeeAI's transition from ACP to A2A brought
    enterprise agent communication patterns into the A2A community, influencing v0.3.0's
    design.
-
-# Audit Notes
-
-This document incorporates corrections for five discrepancies identified in an independent
-audit of an earlier A2A transport protocol analysis. The corrections are:
-
-1. **JSON-RPC "recommendation" language** — Corrected throughout. The A2A spec treats all
-   three transports as equal; JSON-RPC is the default fallback, not a recommendation.
-
-2. **LangSmith `tasks/get` support** — Removed. Official LangSmith API documentation lists
-   only `message/send` and `message/stream` as supported A2A methods.
-
-3. **Draft v1.0 omission** — Added. The A2A Specification Version History section and Key
-   Insights now reference Draft v1.0 and its implications.
-
-4. **FastA2A spec version** — Corrected. PydanticAI's FastA2A targets A2A spec v0.2.5, not
-   v0.3.0.
-
-5. **LlamaIndex gRPC claim** — Corrected. The original claim of gRPC "via SDK" was based on
-   an April 2025 announcement that predates gRPC's addition to the spec in v0.2.2 (August
-   2025). LlamaIndex's transport support is now listed as JSON-RPC only with a note to
-   re-evaluate once the SDK version is updated.
-
-For the full audit report, see `A2A_Transport_Protocol_Discrepancies.md`.
 
 \newpage
 # Appendix A: References
